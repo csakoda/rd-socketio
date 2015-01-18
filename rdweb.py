@@ -5,6 +5,11 @@ from socketio.server import SocketIOServer
 
 from socketio.namespace import BaseNamespace
 
+from interface import CommInterface
+from rdgame import GameServer
+
+server = GameServer()
+
 public = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__),
@@ -26,9 +31,15 @@ class ChatNamespace(BaseNamespace):
         del self._registry[id(self)]
         super(ChatNamespace, self).disconnect(*args, **kwargs)
 
+    def on_logout(self):
+        if not self.nick:
+            return
+        self._broadcast('exit', self.nick)
+        self.nick = None
+
     def on_login(self, nick):
         if self.nick:
-            self._broadcast('exit', self.nick)
+            return
         self.nick = nick
         self._broadcast('enter', nick)
         self.emit('users',
@@ -38,7 +49,8 @@ class ChatNamespace(BaseNamespace):
 
     def on_chat(self, message):
         if self.nick:
-            self._broadcast('chat', dict(u=self.nick, m=message))
+            print('The web server has received user input of [%s]' % message)
+            CommInterface.send_to_gameserver(message)
         else:
             self.emit('chat', dict(u='SYSTEM', m='You must first login'))
 
@@ -46,6 +58,14 @@ class ChatNamespace(BaseNamespace):
         for s in self._registry.values():
             s.emit(event, message)
 
+    @classmethod
+    def accept_message(cls, message):
+        print('The web server has received a response from the server.')
+        for s in cls._registry.values():
+            s.emit('chat', dict(u='SYSTEM', m='The command has returned back to the users.'))
+
+CommInterface.gameserver = server
+CommInterface.webserver = ChatNamespace
 
 def chat(environ, start_response):
     if environ['PATH_INFO'].startswith('/socket.io'):

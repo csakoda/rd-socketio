@@ -6,15 +6,25 @@
     // Grab some references
     var $status = $('#status');
     var $login_form = $('#login');
+    var $logout_form = $('#logout');
     var $chat_form = $('#chat');
-    var $nicks = $('#nicks');
+    var $users = $('#users');
     var $chat = $('#chat-data');
 
     // Bind the login form
     $login_form.bind('submit', function() {
         var $input = $(this).find('input');
         socket.emit('login', $input.val());
+        $login_form.toggleClass('hidden');
+        $logout_form.toggleClass('hidden');
         $input.val('');
+        return false;
+    });
+
+    $logout_form.bind('submit', function() {
+        socket.emit('logout');
+        $login_form.toggleClass('hidden');
+        $logout_form.toggleClass('hidden');
         return false;
     });
 
@@ -42,29 +52,29 @@
     });
     socket.on('enter', function(msg) {
         users.push(msg);
-        render_nicks();
-        append_chat($('<em>' + msg + '</em> has entered the room<br/>'));
+        render_users();
+        append_chat($('<em>' + msg + '</em> has entered the game.<br/>'));
     });
     socket.on('exit', function(msg) {
         users = $.grep(users, function(value, index) {
             return value != msg });
-        render_nicks();
-        append_chat($('<em>' + msg + '</em> has left the room<br/>'));
+        render_users();
+        append_chat($('<em>' + msg + '</em> has left the game.<br/>'));
     });
     socket.on('users', function(msg) {
         users = msg;
-        render_nicks();
+        render_users();
     });
     socket.on('chat', function(msg) {
         append_chat($('<em>' + msg.u + '</em> &mdash; ' + msg.m + '<br>'));
     });
 
     // Some helper functions
-    function render_nicks() {
+    function render_users() {
         var result = $.map(users, function(value, index) {
             return '<li>' + value + '</li>';
         });
-        $nicks.html(result.join('\n'));
+        $users.html(result.join('\n'));
     }
     function scroll_chat() {
         var new_scrolltop = $chat.prop('scrollHeight') - $chat.height();

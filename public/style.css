@@ -1,0 +1,36 @@
+body{
+	font-family: 'Courier New';
+	padding: 0;
+	margin: 0;
+}
+.border {
+	border: 1px solid black; 
+}
+input {
+	width: 35em; 
+}
+.left {
+	width: 25%;
+	float: left; 
+	margin: 20px; 
+}
+.right { 
+	width: 60%; 
+	float: left; 
+	margin: 20px;
+}
+#chat-data { 
+	height: 400px; 
+	overflow: auto;
+	padding: 5px;
+}
+.hidden { 
+	display: none; 
+	overflow: hidden;
+}
+h1 {
+	color: white;
+	background-color: black;
+	margin: 0;
+	padding: 10px 0;
+}
