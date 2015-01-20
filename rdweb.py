@@ -5,7 +5,7 @@ from socketio.server import SocketIOServer
 
 from socketio.namespace import BaseNamespace
 
-from interface import CommInterface
+from interface import CommInterface, CommPacket
 from rdgame import GameServer
 
 server = GameServer()
@@ -26,31 +26,27 @@ class ChatNamespace(BaseNamespace):
         self.nick = None
 
     def disconnect(self, *args, **kwargs):
-        if self.nick:
-            self._broadcast('exit', self.nick)
         del self._registry[id(self)]
         super(ChatNamespace, self).disconnect(*args, **kwargs)
 
     def on_logout(self):
         if not self.nick:
             return
-        self._broadcast('exit', self.nick)
         self.nick = None
 
     def on_login(self, nick):
         if self.nick:
             return
         self.nick = nick
-        self._broadcast('enter', nick)
-        self.emit('users',
-                  [ ns.nick
-                    for ns in self._registry.values()
-                    if ns.nick is not None ])
+        packet = CommPacket(sent_by=id(self), server_command='login', 
+            server_args={'name': self.nick})
+        CommInterface.send_to_gameserver(packet)
 
     def on_chat(self, message):
         if self.nick:
-            print('The web server has received user input of [%s]' % message)
-            CommInterface.send_to_gameserver(message)
+            packet = CommPacket(sent_by=id(self), message=message)
+            print('The web server has received user input of [%s]' % packet.message)
+            CommInterface.send_to_gameserver(packet)
         else:
             self.emit('chat', dict(u='SYSTEM', m='You must first login'))
 
@@ -59,10 +55,12 @@ class ChatNamespace(BaseNamespace):
             s.emit(event, message)
 
     @classmethod
-    def accept_message(cls, message):
+    def accept_message(cls, packet):
         print('The web server has received a response from the server.')
-        for s in cls._registry.values():
-            s.emit('chat', dict(u='SYSTEM', m='The command has returned back to the users.'))
+        for key, value in cls._registry.iteritems():
+            if key in packet.send_to:
+                print('Message: %s' % packet.message)
+                value.emit('chat', dict(u='SYSTEM', m=packet.message))
 
 CommInterface.gameserver = server
 CommInterface.webserver = ChatNamespace

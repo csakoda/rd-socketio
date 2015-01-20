@@ -66,7 +66,7 @@
         render_users();
     });
     socket.on('chat', function(msg) {
-        append_chat($('<em>' + msg.u + '</em> &mdash; ' + msg.m + '<br>'));
+        append_chat($('<li>' + msg.m + '</li>'));
     });
 
     // Some helper functions

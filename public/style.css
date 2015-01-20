@@ -18,11 +18,24 @@ input {
 	width: 60%; 
 	float: left; 
 	margin: 20px;
+	position: relative;
+	height: 400px;
+	overflow: hidden;
 }
 #chat-data { 
-	height: 400px; 
-	overflow: auto;
 	padding: 5px;
+	position: absolute;
+	bottom: 0;
+	margin-bottom: 30px;
+}
+#chat-data li {
+	margin-bottom: 2px;
+}
+#chat-input {
+	width: 100%;
+	margin: 0;
+	position: absolute;
+	bottom: 0;
 }
 .hidden { 
 	display: none; 
