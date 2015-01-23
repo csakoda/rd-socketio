@@ -17,10 +17,11 @@ class GamePlayer():
 			return None
 
 class GameServer():
-	def __init__(self):
+	def __init__(self, conn):
+                self.conn = conn
 		pass
 
-	def accept_message(self, packet):
+	def send_message(self, packet):
 
 		print('The game server has received the command [%s] from [%s]' % 
 			(packet.message, packet.sent_by))
@@ -28,7 +29,7 @@ class GameServer():
 		self.parse_packet(packet)
 
 	def parse_packet(self, packet):
-		from interface import CommInterface, CommPacket
+		from interface import CommPacket
 
 		player_id = packet.sent_by
 		message = packet.message
@@ -44,7 +45,7 @@ class GameServer():
 		if player is None:
 			response = CommPacket(send_to=[packet.sent_by,], 
 				message='Socket [%i] has no player attached.' % player_id)
-			CommInterface.send_to_webserver(response)
+			self.conn.send_message(response)
 			return
 
 		print(player, message)
@@ -57,7 +58,7 @@ class GameServer():
 		self.parse_command(player, command, args)
 
 	def parse_command(self, player, command, args):
-		from interface import CommInterface, CommPacket
+		from interface import CommPacket
 		# Say only, for now
 		if command == 'say':
 			message = " ".join(args)
@@ -66,9 +67,9 @@ class GameServer():
 			room_response = CommPacket(
 				send_to=[p.pid for p in GamePlayer._registry if p is not player],
 				message='%s says \'%s\'' % (player.name, message))
-			CommInterface.send_to_webserver(room_response)
-			CommInterface.send_to_webserver(self_response)
+			self.conn.send_message(room_response)
+			self.conn.send_message(self_response)
 		else:
 			self_response = CommPacket(send_to=[player.pid,], 
 				message='Huh? The only valid command is \'say\'.')
-			CommInterface.send_to_webserver(self_response)
+			self.conn.send_message(self_response)
