@@ -9,6 +9,7 @@ class ChatNamespace(BaseNamespace):
         self._registry[id(self)] = self
         self.emit('connect')
         self.nick = None
+        # our connection to the GameServer for this ChatNamespace session
         self.server = GameServer(self)
 
     def disconnect(self, *args, **kwargs):

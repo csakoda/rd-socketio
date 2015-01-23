@@ -18,6 +18,7 @@ class GamePlayer():
 
 class GameServer():
 	def __init__(self, conn):
+                # our connection back to the ChatNamespace client
                 self.conn = conn
 		pass
 
