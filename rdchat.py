@@ -9,6 +9,7 @@ class ChatNamespace(BaseNamespace):
         self._registry[id(self)] = self
         self.emit('connect')
         self.nick = None
+        self.server = GameServer(self)
 
     def disconnect(self, *args, **kwargs):
         del self._registry[id(self)]
@@ -25,13 +26,13 @@ class ChatNamespace(BaseNamespace):
         self.nick = nick
         packet = CommPacket(sent_by=id(self), server_command='login', 
             server_args={'name': self.nick})
-        GameServer(self).send_message(packet)
+        self.server.send_message(packet)
 
     def on_chat(self, message):
         if self.nick:
             packet = CommPacket(sent_by=id(self), message=message)
             print('The web server has received user input of [%s]' % packet.message)
-            GameServer(self).send_message(packet)
+            self.server.send_message(packet)
         else:
             self.emit('chat', dict(u='SYSTEM', m='You must first login'))
 
