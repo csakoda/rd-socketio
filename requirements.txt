@@ -21,7 +21,7 @@ gevent-socketio==0.3.5-rc2
 gevent-websocket==0.9.3
 greenlet==0.4.5
 html5lib==0.999
-httplib2==0.8
+httplib2==0.18.0
 itsdangerous==0.24
 lockfile==0.8
 lxml==3.3.3
